@@ -1,0 +1,9 @@
+{
+  "extends": "@rnw-scripts/ts-config",
+  "include": ["src"],
+  "compilerOptions": {
+    // Do not emit code, since we bootstrap ts-node. Only type-check.
+    "noEmit": true,
+    "esModuleInterop": true,
+  }
+}

@@ -1,49 +1,33 @@
 {
-  "name": "react-native-releases",
-  "description": "Changelog for the React Native project",
-  "license": "MIT",
+  "name": "react-native-releases-repo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Repo for the react-native release infrastructure",
+  "workspaces": {
+    "packages": [
+      "packages/*",
+      "packages/@react-native-community/*"
+    ]
+  },
   "scripts": {
-    "test": "jest",
-    "format": "prettier {.,docs}/*.md scripts{,/**}/*.ts --write",
-    "format:check": "prettier {.,docs}/*.md scripts{,/**}/*.ts --list-different",
-    "generate": "env TS_NODE_TRANSPILE_ONLY=true node $_NODE_OPTS -r ts-node/register ./scripts/changelog-generator.ts",
-    "generate:debug": "env _NODE_OPTS=--inspect-brk yarn -s generate",
-    "type-check": "tsc --noEmit --pretty"
+    "build": "lage build",
+    "lint": "lage lint --verbose",
+    "lint:fix": "lage lint:fix",
+    "clean": "lage clean",
+    "test": "lage test --verbose"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn format:check && yarn type-check"
+      "pre-commit": "yarn lint"
     }
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/react-native-community/releases.git"
-  },
-  "author": "",
-  "bugs": {
-    "url": "https://github.com/react-native-community/releases/issues"
-  },
-  "homepage": "https://github.com/react-native-community/releases#readme",
   "devDependencies": {
-    "@babel/preset-env": "^7.8.6",
-    "@babel/preset-typescript": "^7.8.3",
-    "@types/chalk": "^2.2.0",
-    "@types/fast-levenshtein": "^0.0.1",
-    "@types/jest": "^25.1.3",
-    "@types/node": "^13.7.7",
-    "husky": "1.3.1",
-    "jest": "^25.1.0",
-    "prettier": "1.17.0"
+    "@rnw-scripts/jest-unittest-config": "1.2.1",
+    "eslint-plugin-prettier": "3.4.0",
+    "husky": "^6.0.0",
+    "lage": "^0.29.3"
   },
-  "dependencies": {
-    "@octokit/rest": "^18.5.3",
-    "chalk": "^3.0.0",
-    "deepmerge": "^4.2.2",
-    "fast-levenshtein": "^2.0.6",
-    "p-limit": "^2.2.2",
-    "simple-git": "^2.39.0",
-    "ts-node": "^8.6.2",
-    "typescript": "^3.8.3",
-    "yargs": "13.2.2"
+  "resolutions": {
+    "@rnw-scripts/babel-node-config": "0.0.2"
   }
 }

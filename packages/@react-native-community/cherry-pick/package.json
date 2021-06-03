@@ -1,0 +1,28 @@
+{
+  "name": "@react-native-community/cherry-pick",
+  "version": "0.0.0",
+  "description": "Cherry-pick commits from a referenced issue",
+  "license": "MIT",
+  "scripts": {
+    "lint": "rnw-scripts lint",
+    "lint:fix": "rnw-scripts lint:fix"
+  },
+  "bin": {
+    "cherry-pick": "./src/cherry-pick.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/react-native-community/releases.git",
+    "directory": "packages/@react-native-community/cherry-pick"
+  },
+  "devDependencies": {
+    "@rnw-scripts/eslint-config": "0.1.6",
+    "@rnw-scripts/just-task": "2.1.1",
+    "eslint": "7.12.0",
+    "just-scripts": "^1.3.3",
+    "prettier": "1.19.1"
+  },
+  "dependencies": {
+    "@octokit/rest": "^18.5.3"
+  }
+}

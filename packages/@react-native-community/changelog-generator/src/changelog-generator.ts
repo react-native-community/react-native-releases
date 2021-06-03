@@ -41,7 +41,7 @@ export const CHANGES_TEMPLATE: Changes = Object.freeze(
 ) as Changes;
 
 const CHANGELOG_LINE_REGEXP = new RegExp(
-  `(\\[(${[...CHANGE_TYPE, ...CHANGE_CATEGORY].join("|")})\\]\s*)+`,
+  `(\\[(${[...CHANGE_TYPE, ...CHANGE_CATEGORY].join("|")})\\]\\s*)+`,
   "i"
 );
 
@@ -51,19 +51,16 @@ export interface Commit {
   author?: { login: string };
 }
 
-export type PlatformChanges = Record<
-  (typeof CHANGE_CATEGORY)[number],
-  string[]
->;
+export type PlatformChanges = Record<typeof CHANGE_CATEGORY[number], string[]>;
 
-export type Changes = Record<(typeof CHANGE_TYPE)[number], PlatformChanges>;
+export type Changes = Record<typeof CHANGE_TYPE[number], PlatformChanges>;
 
 //#region NETWORK
 //*****************************************************************************
 
-function fetchJSON<T>(token: string, path: string) {
+function fetchJSON<T>(token: string, jsonPath: string) {
   const host = "api.github.com";
-  console.warn(chalk.yellow(`https://${host}${path}`));
+  console.warn(chalk.yellow(`https://${host}${jsonPath}`));
   return new Promise<{ json: T; headers: IncomingHttpHeaders }>(
     (resolve, reject) => {
       let data = "";
@@ -71,7 +68,7 @@ function fetchJSON<T>(token: string, path: string) {
       https
         .get({
           host,
-          path,
+          path: jsonPath,
           headers: {
             Authorization: `token ${token}`,
             "User-Agent":
@@ -124,7 +121,7 @@ export function fetchCommits(token: string, base: string, compare: string) {
               return resolve(commits);
             }
           }
-          if (!(headers["link"] as string).includes("next")) {
+          if (!(headers.link as string).includes("next")) {
             throw new Error(
               "Did not find commit after paging through all commits"
             );
@@ -184,15 +181,15 @@ function filterRevertCommits(commits: Commit[]) {
       return true;
     })
     .filter(item => {
-      let text = item.commit.message.split("\n")[0].toLowerCase();
-      revertCommits.forEach(revertCommit => {
+      const text = item.commit.message.split("\n")[0].toLowerCase();
+      for (const revertCommit of revertCommits) {
         if (levenshtein.get(text, revertCommit) < 0.5 * revertCommit.length) {
-          revertCommits = revertCommits.filter(function(e) {
+          revertCommits = revertCommits.filter(e => {
             return e !== revertCommit;
           });
           return false;
         }
-      });
+      }
       return true;
     });
   if (revertCommits.length > 0) {
@@ -268,9 +265,7 @@ export function getOriginalCommit(
     ).then(sha => {
       if (sha === "") {
         throw new Error(
-          `Expected a commit to match ${
-            match[1]
-          }, is your \`master\` branch out of date?`
+          `Expected a commit to match ${match[1]}, is your \`master\` branch out of date?`
         );
       }
       if (sha.includes("\n")) {
@@ -473,7 +468,7 @@ export function getChangeMessage(item: Commit, onlyMessage: boolean = false) {
       .find(a => /\[ios\]|\[android\]|\[general\]/i.test(a)) ||
     commitMessage.reverse()[0];
   entry = entry.replace(/^((changelog:\s*)?(\[\w+\]\s?)+[\s-]*)/i, ""); //Remove the [General] [whatever]
-  entry = entry.replace(/ \(\#\d*\)$/i, ""); //Remove the PR number if it's on the end
+  entry = entry.replace(/ \(#\d*\)$/i, ""); //Remove the PR number if it's on the end
 
   // Capitalize
   if (/^[a-z]/.test(entry)) {
@@ -506,6 +501,7 @@ export function getChangelogDesc(
   const acc = deepmerge(CHANGES_TEMPLATE, {});
   const commitsWithoutExactChangelogTemplate: string[] = [];
 
+  // eslint-disable-next-line complexity
   commits.forEach(item => {
     let change = item.commit.message.split("\n").find(line => {
       return CHANGELOG_LINE_REGEXP.test(line);
@@ -734,14 +730,21 @@ export function getAllChangelogDescriptions(
   return Promise.resolve(commits)
     .then(filterCICommits)
     .then(filterRevertCommits)
-    .then(commits =>
-      getOriginalCommits(options.gitDir, commits, options.maxWorkers)
+    .then(filteredCommits =>
+      getOriginalCommits(options.gitDir, filteredCommits, options.maxWorkers)
     )
-    .then(commits =>
-      filterPreviouslyPickedCommits(options.existingChangelogData, commits)
+    .then(filteredCommits =>
+      filterPreviouslyPickedCommits(
+        options.existingChangelogData,
+        filteredCommits
+      )
     )
-    .then(commits =>
-      getChangelogDesc(commits, !!options.verbose, !!options.renderOnlyMessage)
+    .then(filteredCommits =>
+      getChangelogDesc(
+        filteredCommits,
+        !!options.verbose,
+        !!options.renderOnlyMessage
+      )
     );
 }
 
@@ -757,7 +760,7 @@ export function run(
     .then(changes => buildMarkDown(options.compare, changes));
 }
 
-if (!module["parent"]) {
+if (process.env.JEST_WORKER_ID === undefined) {
   const argv = yargs
     .usage(
       "$0 [args]",
