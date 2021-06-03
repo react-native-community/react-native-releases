@@ -41,6 +41,7 @@
     "deepmerge": "^4.2.2",
     "fast-levenshtein": "^2.0.6",
     "p-limit": "^2.2.2",
+    "prompts": "^2.4.1",
     "simple-git": "^2.39.0",
     "ts-node": "^8.6.2",
     "typescript": "^3.8.3",
